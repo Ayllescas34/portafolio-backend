@@ -104,14 +104,10 @@ describe('Rate limiting (integration)', () => {
   let ctx: TestContext;
 
   beforeAll(async () => {
-    process.env.RATE_LIMIT_ENABLED = 'true';
-    ctx = await createTestApp();
+    ctx = await createTestApp({ rateLimit: true });
     await resetDatabase(ctx.prisma);
   });
-  afterAll(async () => {
-    process.env.RATE_LIMIT_ENABLED = 'false';
-    await ctx.app.close();
-  });
+  afterAll(() => ctx.app.close());
 
   it('limits login attempts to 5 per minute', async () => {
     for (let i = 0; i < 5; i++) {

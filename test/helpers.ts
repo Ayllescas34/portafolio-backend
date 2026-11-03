@@ -1,4 +1,7 @@
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { AppConfigService } from '../src/config/app-config.service';
+import type { EnvironmentVariables } from '../src/config/env.validation';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
@@ -16,9 +19,22 @@ export interface TestContext {
   http: () => ReturnType<typeof request>;
 }
 
-/** Boots the real application (same global pipeline as main.ts). */
-export async function createTestApp(): Promise<TestContext> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+/**
+ * Boots the real application (same global pipeline as main.ts). The validated
+ * configuration is cached when AppModule is imported, so per-suite settings
+ * are applied by overriding AppConfigService instead of mutating process.env.
+ */
+export async function createTestApp(options: { rateLimit?: boolean } = {}): Promise<TestContext> {
+  let builder = Test.createTestingModule({ imports: [AppModule] });
+  if (options.rateLimit !== undefined) {
+    const rateLimitEnabled = options.rateLimit;
+    builder = builder.overrideProvider(AppConfigService).useFactory({
+      factory: (config: ConfigService<EnvironmentVariables, true>) =>
+        Object.defineProperty(new AppConfigService(config), 'rateLimitEnabled', { get: () => rateLimitEnabled }),
+      inject: [ConfigService],
+    });
+  }
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({ logger: ['error'] });
   configureApp(app);
   await app.init();

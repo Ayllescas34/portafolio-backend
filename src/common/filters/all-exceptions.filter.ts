@@ -57,7 +57,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     const mapped = this.map(exception);
-    if (mapped.status >= 500) {
+    // Deliberate HTTP errors (e.g. 503 "form disabled") are not failures; only unexpected ones get a stack trace.
+    if (mapped.status >= 500 && !(exception instanceof HttpException)) {
       const stack = exception instanceof Error ? exception.stack : String(exception);
       this.logger.error(`${request.method} ${request.path} -> ${mapped.status}`, stack);
     }
