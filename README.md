@@ -107,5 +107,8 @@ cuyo nombre no termine en `_test`.
 
 - Prisma 6 advierte que la clave `package.json#prisma` desaparecerá en Prisma 7. No afecta al
   funcionamiento.
-- `npm audit` reporta vulnerabilidades moderadas en dependencias de desarrollo de los CLI. No se
-  forzaron actualizaciones mayores para no romper versiones compatibles.
+- `multer` se fija en `^2.5.0` mediante `overrides` hasta que Nest incluya esa versión.
+- `npm audit --omit=dev` reporta 3 avisos altos en la cadena de la CLI de Prisma (`deepmerge-ts`) y 2
+  moderados en `@nestjs/swagger` (`js-yaml`). La corrección exige Prisma 7 y Swagger 12, y queda en
+  [mejoras futuras](docs/mejoras-futuras.md). Esas dependencias no procesan datos de las peticiones,
+  y Swagger debe desactivarse en producción.
