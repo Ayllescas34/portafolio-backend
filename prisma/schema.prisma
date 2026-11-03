@@ -1,0 +1,413 @@
+// Portfolio data model. Tables and columns use snake_case in PostgreSQL;
+// Prisma models keep camelCase. Check constraints that Prisma cannot express
+// live in the migrations (see docs/data-model.md).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERNSHIP
+  TEMPORARY
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+/// How precise a stored date is, so "2022" is never rendered as "enero 2022".
+enum DatePrecision {
+  YEAR
+  MONTH
+  DAY
+}
+
+enum EducationStatus {
+  IN_PROGRESS
+  COMPLETED
+  PAUSED
+  INCOMPLETE
+}
+
+enum ExperienceItemKind {
+  RESPONSIBILITY
+  ACHIEVEMENT
+}
+
+enum ProjectStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  MAINTAINED
+  ARCHIVED
+}
+
+enum ProjectCategory {
+  WEB_APP
+  MOBILE_APP
+  API
+  DATABASE
+  DESKTOP
+  TOOL
+  OTHER
+}
+
+enum SocialPlatform {
+  GITHUB
+  LINKEDIN
+  GITLAB
+  X
+  WEBSITE
+  OTHER
+}
+
+enum ContactMessageStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+enum HighlightKind {
+  WORK_STYLE
+  INTEREST
+  VALUE
+}
+
+enum ThemePreference {
+  DARK
+  LIGHT
+  SYSTEM
+}
+
+// ─── Administration ───────────────────────────────────────────────────────
+
+model AdminUser {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(120)
+  /// Always stored lowercase.
+  email        String    @unique @db.VarChar(254)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  isActive     Boolean   @default(true) @map("is_active")
+  /// Incremented on logout or password change to revoke issued JWTs.
+  tokenVersion Int       @default(0) @map("token_version")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("admin_users")
+}
+
+/// Singleton (id = 1, enforced by a check constraint).
+model SiteSettings {
+  id                 Int             @id @default(1)
+  siteTitle          String          @map("site_title") @db.VarChar(120)
+  siteDescription    String          @map("site_description") @db.VarChar(300)
+  ogImageUrl         String?         @map("og_image_url") @db.VarChar(500)
+  defaultTheme       ThemePreference @default(DARK) @map("default_theme")
+  defaultLocale      String          @default("es") @map("default_locale") @db.VarChar(10)
+  contactFormEnabled Boolean         @default(true) @map("contact_form_enabled")
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("site_settings")
+}
+
+// ─── Profile ──────────────────────────────────────────────────────────────
+
+/// Singleton (id = 1, enforced by a check constraint).
+model Profile {
+  id                Int      @id @default(1)
+  fullName          String   @map("full_name") @db.VarChar(120)
+  professionalTitle String   @map("professional_title") @db.VarChar(160)
+  shortBio          String   @map("short_bio") @db.VarChar(400)
+  longBio           String?  @map("long_bio") @db.Text
+  /// Public location only (city / country), never a street address.
+  location          String?  @db.VarChar(120)
+  /// Null means no email is shown publicly.
+  publicEmail       String?  @map("public_email") @db.VarChar(254)
+  phone             String?  @db.VarChar(40)
+  isPhonePublic     Boolean  @default(false) @map("is_phone_public")
+  availability      String?  @db.VarChar(160)
+  profileImageUrl   String?  @map("profile_image_url") @db.VarChar(500)
+  profileImageAlt   String?  @map("profile_image_alt") @db.VarChar(200)
+  /// Public CV file (never the private source PDF).
+  cvFileUrl         String?  @map("cv_file_url") @db.VarChar(500)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("profile")
+}
+
+/// "Sobre mí" building blocks: how I work, technical interests and value offered.
+model ProfileHighlight {
+  id           String        @id @default(uuid()) @db.Uuid
+  kind         HighlightKind
+  title        String        @db.VarChar(120)
+  description  String        @db.VarChar(600)
+  displayOrder Int           @default(0) @map("display_order")
+  isPublished  Boolean       @default(true) @map("is_published")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([kind, isPublished, displayOrder])
+  @@map("profile_highlights")
+}
+
+model SocialLink {
+  id           String         @id @default(uuid()) @db.Uuid
+  platform     SocialPlatform
+  label        String         @db.VarChar(80)
+  url          String         @db.VarChar(500)
+  displayOrder Int            @default(0) @map("display_order")
+  isPublished  Boolean        @default(true) @map("is_published")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([platform, url])
+  @@index([isPublished, displayOrder])
+  @@map("social_links")
+}
+
+// ─── Experience ───────────────────────────────────────────────────────────
+
+model Experience {
+  id             String                 @id @default(uuid()) @db.Uuid
+  company        String                 @db.VarChar(160)
+  position       String                 @db.VarChar(160)
+  location       String?                @db.VarChar(160)
+  employmentType EmploymentType?        @map("employment_type")
+  workMode       WorkMode?              @map("work_mode")
+  startDate      DateTime               @map("start_date") @db.Date
+  endDate        DateTime?              @map("end_date") @db.Date
+  isCurrent      Boolean                @default(false) @map("is_current")
+  datePrecision  DatePrecision          @default(MONTH) @map("date_precision")
+  summary        String?                @db.VarChar(1000)
+  displayOrder   Int                    @default(0) @map("display_order")
+  isPublished    Boolean                @default(true) @map("is_published")
+  createdAt      DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  items          ExperienceItem[]
+  technologies   ExperienceTechnology[]
+
+  @@index([isPublished, displayOrder])
+  @@index([startDate(sort: Desc)])
+  @@map("experiences")
+}
+
+/// Responsibilities and achievements are rows, not a JSON array, so they can be
+/// ordered, edited one by one and validated individually.
+model ExperienceItem {
+  id           String             @id @default(uuid()) @db.Uuid
+  experienceId String             @map("experience_id") @db.Uuid
+  kind         ExperienceItemKind
+  content      String             @db.VarChar(500)
+  displayOrder Int                @default(0) @map("display_order")
+  experience   Experience         @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@index([experienceId, kind, displayOrder])
+  @@map("experience_items")
+}
+
+model ExperienceTechnology {
+  experienceId String     @map("experience_id") @db.Uuid
+  technologyId String     @map("technology_id") @db.Uuid
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Restrict)
+
+  @@id([experienceId, technologyId])
+  @@index([technologyId])
+  @@map("experience_technologies")
+}
+
+// ─── Education & certifications ───────────────────────────────────────────
+
+model Education {
+  id            String          @id @default(uuid()) @db.Uuid
+  institution   String          @db.VarChar(160)
+  program       String          @db.VarChar(160)
+  degree        String?         @db.VarChar(120)
+  status        EducationStatus @default(COMPLETED)
+  startDate     DateTime?       @map("start_date") @db.Date
+  endDate       DateTime?       @map("end_date") @db.Date
+  datePrecision DatePrecision   @default(YEAR) @map("date_precision")
+  description   String?         @db.VarChar(1000)
+  displayOrder  Int             @default(0) @map("display_order")
+  isPublished   Boolean         @default(true) @map("is_published")
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([isPublished, displayOrder])
+  @@map("education")
+}
+
+model Certification {
+  id             String        @id @default(uuid()) @db.Uuid
+  name           String        @db.VarChar(160)
+  issuer         String        @db.VarChar(160)
+  issueDate      DateTime?     @map("issue_date") @db.Date
+  expirationDate DateTime?     @map("expiration_date") @db.Date
+  datePrecision  DatePrecision @default(MONTH) @map("date_precision")
+  credentialId   String?       @map("credential_id") @db.VarChar(120)
+  credentialUrl  String?       @map("credential_url") @db.VarChar(500)
+  description    String?       @db.VarChar(600)
+  displayOrder   Int           @default(0) @map("display_order")
+  isPublished    Boolean       @default(true) @map("is_published")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([isPublished, displayOrder])
+  @@map("certifications")
+}
+
+// ─── Skills ───────────────────────────────────────────────────────────────
+
+model SkillCategory {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @unique @db.VarChar(80)
+  slug         String   @unique @db.VarChar(80)
+  description  String?  @db.VarChar(300)
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  skills       Skill[]
+
+  @@index([displayOrder])
+  @@map("skill_categories")
+}
+
+model Skill {
+  id                String        @id @default(uuid()) @db.Uuid
+  categoryId        String        @map("category_id") @db.Uuid
+  name              String        @db.VarChar(80)
+  slug              String        @unique @db.VarChar(80)
+  description       String?       @db.VarChar(300)
+  /// Qualitative only (e.g. "Uso profesional"); never a percentage.
+  proficiencyLabel  String?       @map("proficiency_label") @db.VarChar(40)
+  /// Only when confirmed by the owner.
+  yearsOfExperience Decimal?      @map("years_of_experience") @db.Decimal(3, 1)
+  icon              String?       @db.VarChar(60)
+  displayOrder      Int           @default(0) @map("display_order")
+  isFeatured        Boolean       @default(false) @map("is_featured")
+  isPublished       Boolean       @default(true) @map("is_published")
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  /// Restrict: a category with skills cannot be deleted by accident.
+  category          SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([categoryId, isPublished, displayOrder])
+  @@index([isFeatured])
+  @@map("skills")
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────
+
+model Technology {
+  id          String                 @id @default(uuid()) @db.Uuid
+  name        String                 @unique @db.VarChar(60)
+  slug        String                 @unique @db.VarChar(60)
+  icon        String?                @db.VarChar(60)
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  projects    ProjectTechnology[]
+  experiences ExperienceTechnology[]
+
+  @@map("technologies")
+}
+
+model Project {
+  id               String                  @id @default(uuid()) @db.Uuid
+  title            String                  @db.VarChar(160)
+  slug             String                  @unique @db.VarChar(160)
+  shortDescription String                  @map("short_description") @db.VarChar(300)
+  fullDescription  String?                 @map("full_description") @db.Text
+  problem          String?                 @db.VarChar(1500)
+  solution         String?                 @db.VarChar(1500)
+  role             String?                 @db.VarChar(160)
+  category         ProjectCategory         @default(WEB_APP)
+  status           ProjectStatus           @default(IN_PROGRESS)
+  repositoryUrl    String?                 @map("repository_url") @db.VarChar(500)
+  liveUrl          String?                 @map("live_url") @db.VarChar(500)
+  coverImageUrl    String?                 @map("cover_image_url") @db.VarChar(500)
+  coverImageAlt    String?                 @map("cover_image_alt") @db.VarChar(200)
+  startDate        DateTime?               @map("start_date") @db.Date
+  endDate          DateTime?               @map("end_date") @db.Date
+  isFeatured       Boolean                 @default(false) @map("is_featured")
+  isPublished      Boolean                 @default(false) @map("is_published")
+  displayOrder     Int                     @default(0) @map("display_order")
+  createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  technologies     ProjectTechnology[]
+  images           ProjectImage[]
+  responsibilities ProjectResponsibility[]
+
+  @@index([isPublished, isFeatured, displayOrder])
+  @@index([category])
+  @@map("projects")
+}
+
+model ProjectTechnology {
+  projectId    String     @map("project_id") @db.Uuid
+  technologyId String     @map("technology_id") @db.Uuid
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// Restrict: a technology in use cannot be deleted silently.
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Restrict)
+
+  @@id([projectId, technologyId])
+  @@index([technologyId])
+  @@map("project_technologies")
+}
+
+model ProjectImage {
+  id           String   @id @default(uuid()) @db.Uuid
+  projectId    String   @map("project_id") @db.Uuid
+  imageUrl     String   @map("image_url") @db.VarChar(500)
+  altText      String   @map("alt_text") @db.VarChar(200)
+  caption      String?  @db.VarChar(300)
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, displayOrder])
+  @@map("project_images")
+}
+
+model ProjectResponsibility {
+  id           String  @id @default(uuid()) @db.Uuid
+  projectId    String  @map("project_id") @db.Uuid
+  content      String  @db.VarChar(500)
+  displayOrder Int     @default(0) @map("display_order")
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, displayOrder])
+  @@map("project_responsibilities")
+}
+
+// ─── Contact ──────────────────────────────────────────────────────────────
+
+model ContactMessage {
+  id        String               @id @default(uuid()) @db.Uuid
+  name      String               @db.VarChar(120)
+  email     String               @db.VarChar(254)
+  subject   String               @db.VarChar(160)
+  message   String               @db.VarChar(5000)
+  status    ContactMessageStatus @default(NEW)
+  readAt    DateTime?            @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([status, createdAt(sort: Desc)])
+  @@map("contact_messages")
+}
