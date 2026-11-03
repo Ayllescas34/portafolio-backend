@@ -20,6 +20,7 @@
 6. CSP con *hash* para el script de tema de `index.html`; HSTS.
 7. Envío real de notificaciones de contacto (correo transaccional), con consentimiento.
 8. Dominio, certificado TLS y monitoreo de disponibilidad.
+9. Compresión gzip o Brotli para las respuestas de la API en el proxy o la CDN.
 
 ## Producto
 
@@ -27,5 +28,5 @@
 - Prerenderizado (SSR/SSG) para SEO y para compartir enlaces con vista previa.
 - Ordenar arrastrando en el panel, además de los botones subir y bajar.
 - Historial de cambios (auditoría por usuario) y papelera para recuperar borrados.
-- Migrar a Prisma 7+ con `prisma.config.ts` y a Nest 12.
-- Pruebas automáticas de accesibilidad con axe-core.
+- Migrar a Prisma 7+ con `prisma.config.ts`, a Nest 12 y a `@nestjs/swagger` 12; esto resuelve los
+  avisos restantes de `npm audit`.

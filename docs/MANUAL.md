@@ -191,6 +191,7 @@ Ejecútalas en una terminal aparte. Las pruebas de integración y las E2E usan l
 | Integración de la API (PostgreSQL real) | `backend` | `npm run test:integration` |
 | Unitarias del sitio | `frontend` | `npm run test:ci` |
 | End-to-end (Chrome) | `frontend` | `npx playwright test` |
+| Accesibilidad con axe (incluida en E2E) | `frontend` | `npx playwright test e2e/accessibility.spec.ts` |
 | Reporte E2E | `frontend` | `npx playwright show-report` |
 | Linter | `backend` y `frontend` | `npm run lint` |
 | Compilación de producción | `backend` / `frontend` | `npm run build` |
