@@ -1,8 +1,8 @@
 # Modelo de datos
 
 Base de datos: **PostgreSQL 18**. Esquema definido en
-[`backend/prisma/schema.prisma`](../backend/prisma/schema.prisma) y aplicado por las
-migraciones de [`backend/prisma/migrations`](../backend/prisma/migrations).
+[`prisma/schema.prisma`](../prisma/schema.prisma) y aplicado por las
+migraciones de [`prisma/migrations`](../prisma/migrations).
 
 - Tablas y columnas en `snake_case`; modelos de Prisma en `camelCase`.
 - Claves primarias UUID (no revelan cantidad ni orden de registros).
@@ -236,13 +236,12 @@ del propietario en el panel.
 
 ## Seed
 
-[`backend/prisma/seed.ts`](../backend/prisma/seed.ts) carga **solo información confirmada**
-(CV de enero de 2026 y el puesto en Canella indicado por el propietario). Es idempotente.
+[`prisma/seed.ts`](../prisma/seed.ts) carga **solo información confirmada** (CV de enero de 2026,
+datos indicados por el propietario y repositorios públicos de sus proyectos). Es idempotente.
 
-- **No se cargan:** dirección exacta, referencias personales ni sus teléfonos.
-- **Quedan como borrador oculto hasta confirmarse:** nivel de inglés, enlace de GitHub y
-  el proyecto *Control de Gastos*.
-- **El teléfono** se guarda, pero `is_phone_public = false`.
+- **No se cargan:** teléfono, dirección exacta ni referencias personales. Este repositorio es público.
+- **Quedan como borrador oculto hasta confirmarse:** nivel de inglés.
+- **El teléfono** se escribe desde el panel y sigue oculto con `is_phone_public = false`.
 
 ## Internacionalización futura
 
@@ -250,4 +249,4 @@ El contenido se guarda hoy en español en columnas simples. Para añadir inglés
 aplicación, el camino previsto es agregar tablas de traducción por entidad (por ejemplo
 `experience_translations (experience_id, locale, position, summary)`) y un parámetro `locale`
 en `/api/public`. Los textos de la interfaz ya están centralizados en
-`frontend/src/app/core/i18n/es.ts`.
+`src/app/core/i18n/es.ts` del repositorio `portafolio-front`.

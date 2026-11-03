@@ -18,7 +18,7 @@ flowchart LR
       SW[Swagger /api/docs]
     end
     DB[(PostgreSQL 18<br/>portafolio_ayllescas)]
-    FS[(backend/uploads)]
+    FS[(uploads)]
 
     P --> PX
     A --> PX
@@ -30,17 +30,15 @@ flowchart LR
 
 ## Separación de responsabilidades
 
-| Carpeta | Contenido |
+| Repositorio | Contenido |
 |---|---|
-| `backend/` | API REST NestJS 11 + Prisma 6. Independiente del frontend. |
-| `frontend/` | Aplicación Angular 20 (standalone, signals, SCSS). |
-| `database/` | Scripts para crear el rol y las bases locales. `database/local/` es privado e ignorado por Git. |
-| `docs/` | Documentación técnica y manual. |
+| `portafolio-backend` | API REST NestJS 11 + Prisma 6, independiente del frontend. Incluye `database/` (scripts para crear el rol y las bases locales; `database/local/` es privado e ignorado por Git) y `docs/` (documentación técnica y manual). |
+| `portafolio-front` | Aplicación Angular 20 (standalone, signals, SCSS). Sus pruebas E2E levantan la API desde `../backend` o desde `BACKEND_DIR`. |
 
 ## Backend
 
 ```
-backend/src
+src (portafolio-backend)
 ├── main.ts / app.setup.ts     arranque; pipeline HTTP compartido con las pruebas
 ├── config/                    variables de entorno validadas al iniciar
 ├── prisma/                    PrismaService (conexión)
@@ -66,7 +64,7 @@ Prisma → `ResponseEnvelopeInterceptor` (`{ data }` o `{ data, meta }`) o `AllE
 ## Frontend
 
 ```
-frontend/src/app
+src/app (portafolio-front)
 ├── core/          auth (store de sesión, guard), http (interceptores, ApiError),
 │                  i18n (diccionario es), seo, ui (tema, movimiento reducido, avisos)
 ├── shared/        íconos SVG, tarjeta de proyecto, estados de carga/error, pipe de periodos

@@ -2,8 +2,8 @@
 
 Guía para levantar, usar y mantener el portafolio en tu computadora.
 **Todas las credenciales** (usuarios, contraseñas, nombres de bases de datos) están en
-[`CREDENCIALES.local.md`](../CREDENCIALES.local.md), en la raíz del proyecto. Ese archivo no se
-sube a Git ni a ningún servicio: guárdalo en un lugar seguro (por ejemplo, tu gestor de contraseñas).
+`CREDENCIALES.local.md`, en la carpeta de trabajo. Ese archivo no pertenece a ningún repositorio y
+no se sube a ningún servicio: guárdalo en un lugar seguro (por ejemplo, tu gestor de contraseñas).
 
 ---
 
@@ -11,13 +11,15 @@ sube a Git ni a ningún servicio: guárdalo en un lugar seguro (por ejemplo, tu 
 
 ```
 C:\proyectos-portafolio\portafolio
-├── backend\     API (NestJS + Prisma). Puerto 3000.
-├── frontend\    Sitio y panel (Angular + Three.js). Puerto 4200.
-├── database\    Scripts para crear la base. database\local\ = credenciales privadas.
-├── docs\        Esta guía y la documentación técnica.
-├── CREDENCIALES.local.md   (privado, no versionado)
-└── README.md
+├── backend\     Repositorio portafolio-backend: API (NestJS + Prisma). Puerto 3000.
+│   ├── database\   Scripts para crear la base. database\local\ = credenciales privadas.
+│   └── docs\       Esta guía y la documentación técnica.
+├── frontend\    Repositorio portafolio-front: sitio y panel (Angular + Three.js). Puerto 4200.
+└── CREDENCIALES.local.md   (privado, fuera de los repositorios)
 ```
+
+Son dos repositorios independientes. Los comandos de Git se ejecutan dentro de `backend\` o de
+`frontend\`, nunca en la carpeta que los contiene.
 
 | Servicio | Dirección |
 |---|---|
@@ -78,15 +80,16 @@ Para detener cualquiera de los dos: `Ctrl + C` en su terminal.
 
 Requisitos: Node.js 22, PostgreSQL 18 y Git. Chrome solo para las pruebas E2E.
 
-1. **Dependencias** (una vez):
+1. **Código** (en una carpeta nueva):
    ```bash
-   cd C:\proyectos-portafolio\portafolio\backend; npm install
+   git clone https://github.com/Ayllescas34/portafolio-backend.git backend
    ```
    ```bash
-   cd C:\proyectos-portafolio\portafolio\frontend; npm install
+   git clone https://github.com/Ayllescas34/portafolio-front.git frontend
    ```
-2. **Usuario y bases de datos.** Desde `C:\proyectos-portafolio\portafolio`. Pide la contraseña
-   del superusuario `postgres` y crea el usuario de la app con la contraseña guardada en
+   Luego instala las dependencias en cada carpeta con `npm install`.
+2. **Usuario y bases de datos.** Desde `backend`. Pide la contraseña del superusuario `postgres`
+   y crea el usuario de la app con la contraseña guardada en
    `database\local\credentials.local.env`:
    ```bash
    powershell -ExecutionPolicy Bypass -File .\database\scripts\setup-local-db.ps1
@@ -114,8 +117,7 @@ Requisitos: Node.js 22, PostgreSQL 18 y Git. Chrome solo para las pruebas E2E.
 
 ## 4. Usar el sitio público
 
-- **Inicio:** nombre, cargo, resumen para reclutadores (puesto actual, experiencia, ubicación,
-  contacto y stack principal), botones a Proyectos, Experiencia y Hoja de vida.
+- **Inicio:** nombre, cargo, resumen para reclutadores y botones a Experiencia, Proyectos y Contacto.
 - **Menú:** lleva a cada sección y marca la sección visible. En el teléfono se abre con el botón ☰.
 - **Tema:** el botón de sol o luna cambia entre oscuro y claro, y recuerda tu elección.
 - **Proyectos:** filtra por tecnología o categoría. La dirección cambia (por ejemplo
@@ -169,12 +171,12 @@ sesiones. **Cerrar sesión** invalida la sesión en el servidor.
 
 ### Pendientes recomendados (contenido sin confirmar)
 
-1. **Experiencia → Canella:** modalidad, ubicación y logros verificables (las responsabilidades ya están cargadas).
+1. **Experiencia → Canella:** logros verificables, si los hay y se pueden mencionar.
 2. **Habilidades → Inglés:** escribe un nivel cualitativo y publícalo.
-3. **Proyectos → Control de Gastos:** revisa el texto y publícalo si quieres mostrarlo.
-4. **Enlaces sociales → GitHub:** confirma la URL y publícalo; agrega LinkedIn.
-5. **Perfil:** foto, disponibilidad y, si lo deseas, un CV público en PDF.
-6. **Educación → UMG:** semestre actual o año de inicio.
+3. **Proyectos:** capturas reales para reemplazar las portadas generadas.
+4. **Perfil:** foto, disponibilidad y, si lo deseas, un CV público en PDF.
+5. **Perfil → Teléfono:** ya no está en el seed porque el repositorio es público. En una instalación
+   nueva, escríbelo desde el panel.
 
 ---
 
@@ -187,7 +189,7 @@ Ejecútalas en una terminal aparte. Las pruebas de integración y las E2E usan l
 |---|---|---|
 | Unitarias de la API | `backend` | `npm test` |
 | Integración de la API (PostgreSQL real) | `backend` | `npm run test:integration` |
-| Unitarias del sitio | `frontend` | `npm test -- --watch=false` |
+| Unitarias del sitio | `frontend` | `npm run test:ci` |
 | End-to-end (Chrome) | `frontend` | `npx playwright test` |
 | Reporte E2E | `frontend` | `npx playwright show-report` |
 | Linter | `backend` y `frontend` | `npm run lint` |
@@ -198,18 +200,33 @@ administrador de prueba de contraseña aleatoria. No hace falta detener los serv
 
 ---
 
-## 7. Comandos útiles (en `backend`)
+## 7. Repositorios
+
+| Repositorio | Carpeta | Contenido |
+|---|---|---|
+| [portafolio-backend](https://github.com/Ayllescas34/portafolio-backend) | `backend` | API, base de datos y documentación |
+| [portafolio-front](https://github.com/Ayllescas34/portafolio-front) | `frontend` | Sitio y panel |
+
+1. Crea una rama desde `main`, por ejemplo `feat/capturas-proyectos`.
+2. Haz tus commits y abre un pull request hacia `main`.
+3. Espera a que la integración continua (pestaña **Actions**) termine en verde y fusiona.
+
+Antes de cada commit, revisa con `git status` que no aparezcan archivos `.env` ni `*.local.*`.
+
+---
+
+## 8. Comandos útiles (en `backend`)
 
 | Comando | Efecto |
 |---|---|
-| `npm run db:seed` | Vuelve a cargar los datos iniciales sin duplicar nada (idempotente). |
+| `npm run db:seed` | Vuelve a cargar los datos iniciales sin duplicar nada. ⚠️ Reemplaza lo editado en el panel en perfil, experiencia, educación, habilidades y proyectos; respeta si un proyecto está publicado u oculto. |
 | `npm run admin:create` | Crea otra cuenta o restablece la contraseña de una existente. |
 | `npx prisma studio` | Abre un explorador visual de la base de datos en el navegador. |
 | `npm run db:reset` | ⚠️ **Borra la base de desarrollo** y la recrea con el seed. Pierdes lo editado en el panel. |
 
 ---
 
-## 8. Solución de problemas
+## 9. Solución de problemas
 
 | Síntoma | Causa probable / solución |
 |---|---|
