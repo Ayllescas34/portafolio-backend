@@ -3,11 +3,13 @@
  *   - the CV (January 2026 edition), and
  *   - the owner's messages: Analista Programador (Full Stack) at Canella since
  *     February 2026, working on .NET 8 migrations, frontend, backend, databases,
- *     functional/technical testing, CI/CD, OpenShift and IIS deployments.
+ *     functional/technical testing, CI/CD, OpenShift and IIS deployments, and
+ *   - the owner's public repositories, for the project descriptions.
  *
  * Nothing is invented: no years of experience, percentages, metrics, clients
  * or confidential details. Unconfirmed items are stored unpublished (drafts).
- * Private CV data (street address, references) is intentionally NOT seeded.
+ * Private CV data (phone, street address, references) is intentionally NOT
+ * seeded: this file is public. The phone is entered from the admin panel.
  *
  * Idempotent: fixed ids / natural keys + upsert. On existing projects the
  * owner's publication choice (isPublished) is never overwritten.
@@ -25,6 +27,7 @@ import {
   ProjectStatus,
   SocialPlatform,
   ThemePreference,
+  WorkMode,
 } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -48,6 +51,15 @@ const TECHNOLOGIES = [
   ['SQLite', 'sqlite'],
   ['Drizzle ORM', 'drizzle-orm'],
   ['Playwright', 'playwright'],
+  ['Next.js', 'nextjs'],
+  ['Payload CMS', 'payload-cms'],
+  ['React', 'react'],
+  ['Vite', 'vite'],
+  ['Supabase', 'supabase'],
+  ['Tailwind CSS', 'tailwind-css'],
+  ['Vercel', 'vercel'],
+  ['JavaScript', 'javascript'],
+  ['HTML y CSS', 'html-css'],
 ] as const;
 
 type SkillRow = [name: string, slug: string, featured?: boolean, description?: string];
@@ -193,8 +205,6 @@ async function seedSettingsAndProfile(tx: Prisma.TransactionClient) {
     ].join('\n\n'),
     location: ANTIGUA,
     publicEmail: 'ayllescas34@gmail.com',
-    // Stored for the admin, hidden from the public site until confirmed.
-    phone: '+502 0000-0000',
     isPhonePublic: false,
     availability: null,
   };
@@ -270,17 +280,18 @@ async function seedSettingsAndProfile(tx: Prisma.TransactionClient) {
     await tx.profileHighlight.upsert({ where: { id }, create: { id, ...data }, update: data });
   }
 
-  // GitHub user taken from the remote of the owner's local project. Draft until confirmed.
-  await tx.socialLink.upsert({
-    where: { platform_url: { platform: SocialPlatform.GITHUB, url: 'https://github.com/Ayllescas34' } },
-    create: {
-      platform: SocialPlatform.GITHUB,
-      label: 'GitHub',
-      url: 'https://github.com/Ayllescas34',
-      isPublished: false,
-    },
-    update: {},
-  });
+  const socialLinks: [SocialPlatform, string, string][] = [
+    [SocialPlatform.LINKEDIN, 'LinkedIn', 'https://www.linkedin.com/in/oscar-alejandro-flores-yllescas-365b66249/'],
+    [SocialPlatform.GITHUB, 'GitHub', 'https://github.com/Ayllescas34'],
+  ];
+  for (const [displayOrder, [platform, label, url]] of socialLinks.entries()) {
+    const data = { label, displayOrder, isPublished: true };
+    await tx.socialLink.upsert({
+      where: { platform_url: { platform, url } },
+      create: { platform, url, ...data },
+      update: data,
+    });
+  }
 }
 
 async function seedTechnologies(tx: Prisma.TransactionClient): Promise<Map<string, string>> {
@@ -341,6 +352,7 @@ async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, st
     company: string;
     position: string;
     location: string | null;
+    workMode?: WorkMode;
     employmentType: EmploymentType | null;
     startDate: Date;
     endDate: Date | null;
@@ -354,7 +366,8 @@ async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, st
       id: IDS.canella,
       company: 'Canella',
       position: 'Analista Programador',
-      location: null,
+      location: 'Ciudad de Guatemala, Guatemala',
+      workMode: WorkMode.REMOTE,
       employmentType: null,
       startDate: date('2026-02-01'),
       endDate: null,
@@ -450,7 +463,7 @@ async function seedEducation(tx: Prisma.TransactionClient) {
       status: EducationStatus.IN_PROGRESS,
       startDate: null,
       endDate: null,
-      description: 'Carrera en curso.',
+      description: 'Finalizando el cuarto semestre.',
     },
     {
       id: IDS.kinal,
@@ -501,6 +514,58 @@ async function seedProjects(tx: Prisma.TransactionClient, tech: Map<string, stri
       technologies: ['dotnet-8', 'openshift', 'iis', 'ci-cd'],
     },
     {
+      // Described from the public repository.
+      slug: 'hotel-quinta-vista-verde',
+      title: 'Hotel Quinta Vista Verde (sitio web)',
+      kind: ProjectKind.PERSONAL,
+      shortDescription:
+        'Sitio web de un hotel familiar en Antigua Guatemala, con panel de administración de contenidos y consultas directas por WhatsApp.',
+      context:
+        'Sitio público del hotel: habitaciones, carta de desayunos, promociones, galería, experiencias, reseñas, ubicación y contacto.',
+      problem: null,
+      solution:
+        'Aplicación en Next.js con Payload CMS integrado: el contenido de cada sección se edita desde un panel de administración, sin tocar código. Las habitaciones y los desayunos abren una conversación de WhatsApp con un mensaje ya preparado.',
+      architecture:
+        'Next.js y Payload CMS en una sola aplicación, con PostgreSQL o SQLite según el entorno e imágenes en Vercel Blob. Incluye metadatos, sitemap y robots para SEO.',
+      challenges: null,
+      outcome: 'Sitio publicado en Vercel.',
+      role: 'Desarrollo del sitio y del panel de contenidos',
+      responsibilities: [],
+      category: ProjectCategory.WEB_APP,
+      status: ProjectStatus.COMPLETED,
+      startDate: null,
+      isFeatured: false,
+      publishOnCreate: true,
+      repositoryUrl: 'https://github.com/Ayllescas34/landing_hqvv',
+      liveUrl: 'https://landing-hqvv.vercel.app',
+      technologies: ['nextjs', 'payload-cms', 'react', 'typescript', 'postgresql', 'sqlite', 'tailwind-css', 'vercel'],
+    },
+    {
+      // Described from the public repository.
+      slug: 'album-mundial-2026',
+      title: 'Álbum Mundial 2026',
+      kind: ProjectKind.PERSONAL,
+      shortDescription:
+        'Aplicación web para llevar el control de las estampas del álbum del Mundial 2026: las que tienes, las repetidas y las que faltan.',
+      context: 'Proyecto personal multiusuario para seguir el avance del álbum.',
+      problem: null,
+      solution:
+        'Registro por correo, grilla de estampas por selección, apertura de sobres estampa por estampa, lista de repetidas, buscador y estadísticas de progreso. También incluye perfiles, amigos y un reporte del álbum en PDF.',
+      architecture:
+        'React con Vite y TypeScript en el frontend; Supabase para autenticación y PostgreSQL, con los datos de cada usuario aislados mediante Row Level Security.',
+      challenges: null,
+      outcome: 'Aplicación publicada en Vercel.',
+      role: 'Proyecto personal',
+      responsibilities: [],
+      category: ProjectCategory.WEB_APP,
+      status: ProjectStatus.COMPLETED,
+      startDate: null,
+      isFeatured: false,
+      publishOnCreate: true,
+      liveUrl: 'https://mundial-2026-zeta.vercel.app',
+      technologies: ['react', 'vite', 'typescript', 'tailwind-css', 'supabase', 'postgresql', 'vercel'],
+    },
+    {
       slug: 'portafolio-profesional',
       title: 'Portafolio profesional e interactivo',
       kind: ProjectKind.PERSONAL,
@@ -522,6 +587,7 @@ async function seedProjects(tx: Prisma.TransactionClient, tech: Map<string, stri
       startDate: null,
       isFeatured: false,
       publishOnCreate: true,
+      repositoryUrl: 'https://github.com/Ayllescas34/portafolio-front',
       technologies: ['angular', 'nestjs', 'typescript', 'postgresql', 'prisma', 'threejs', 'scss', 'playwright'],
     },
     {
@@ -548,6 +614,31 @@ async function seedProjects(tx: Prisma.TransactionClient, tech: Map<string, stri
       isFeatured: false,
       publishOnCreate: false,
       technologies: ['react-native', 'typescript', 'sqlite', 'drizzle-orm'],
+    },
+    {
+      // Described from the public repository.
+      slug: 'newton-umg',
+      title: 'NewtonUMG: simulador de las leyes de Newton',
+      kind: ProjectKind.ACADEMIC,
+      shortDescription:
+        'Calculadora y simulador web de problemas de la segunda y tercera ley de Newton, con solución paso a paso y animación.',
+      context: 'Laboratorio 2 del curso de Física en la Universidad Mariano Gálvez.',
+      problem: null,
+      solution:
+        'Dos problemas interactivos: una masa con fricción unida por polea a una masa colgante y dos bloques apilados. A partir de los datos ingresados, la aplicación resuelve el sistema, muestra cada paso del desarrollo y lo anima.',
+      architecture: 'Sitio estático en HTML, CSS y JavaScript, con el motor de cálculo separado de la animación.',
+      challenges: null,
+      outcome: 'Publicado en Vercel.',
+      role: 'Proyecto académico',
+      responsibilities: [],
+      category: ProjectCategory.TOOL,
+      status: ProjectStatus.COMPLETED,
+      startDate: null,
+      isFeatured: false,
+      publishOnCreate: true,
+      repositoryUrl: 'https://github.com/Ayllescas34/fisica-newton',
+      liveUrl: 'https://fisica-newton.vercel.app',
+      technologies: ['javascript', 'html-css', 'tailwind-css', 'vercel'],
     },
   ];
 
