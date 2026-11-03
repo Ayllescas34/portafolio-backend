@@ -20,6 +20,10 @@
 | 16 | **Hoja de vida generada desde los datos** (`/cv` + `@media print`) | Publicar el PDF original | El PDF original contiene datos privados (dirección, referencias). |
 | 17 | **Contenido no confirmado como borrador oculto** | Inventar o rellenar | Requisito del proyecto: no inventar datos. |
 
+| 18 | **Identidad visual "tech ejecutiva"**: fondo carbón, cian y violeta, Poppins en títulos, JetBrains Mono en detalles e Inter en párrafos | Estética corporativa neutra | Pedido del propietario, inspirado en el enfoque de tamalsen.dev. Se adopta el enfoque, no sus activos: logo, textos, video e imágenes no se reutilizan; la escena 3D es propia. |
+| 19 | **Sin "As featured in" ni testimonios** | Copiar esas secciones del referente | No hay logos ni testimonios confirmados, y las referencias del CV son privadas. Ese espacio lo ocupa el resumen para reclutadores. |
+| 20 | **Experiencia con `<details>` nativo** | Acordeón propio en JavaScript | Teclado y lectores de pantalla funcionan sin código adicional. |
+
 ## Seguridad aplicada
 
 - Contraseñas: Argon2id; el script `admin:create` pide la contraseña sin mostrarla y solo guarda el hash.
