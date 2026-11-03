@@ -85,9 +85,12 @@ frontend/src/app
 
 ## Escena Three.js
 
-`public/hero-scene/network-scene.ts`: red de nodos sobre una esfera de Fibonacci con conexiones a
-los vecinos más cercanos y "pulsos" que recorren las aristas (datos entre sistemas).
+`public/hero-scene/network-scene.ts`: diagrama de cinco capas apiladas (interfaz, servicios,
+datos, pruebas y despliegue) unidas por columnas verticales; pequeños pulsos descienden de la
+interfaz al despliegue. Rotación lenta, sin brillos. Se muestra en un panel enmarcado junto al
+texto (nunca detrás) con una leyenda HTML de las capas.
 
+- Solo en escritorio (≥ 901 px): en teléfonos y tabletas pequeñas no se crea contexto WebGL.
 - Se carga con `import()` dinámico solo si hay WebGL; si no, se muestra un SVG estático.
 - Bucle `requestAnimationFrame` fuera de la zona de Angular (sin detección de cambios por frame).
 - Se pausa con `IntersectionObserver` (fuera de pantalla) y `visibilitychange` (pestaña oculta).

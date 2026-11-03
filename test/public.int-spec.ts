@@ -74,6 +74,28 @@ describe('Public API (integration)', () => {
     expect(JSON.stringify(data)).not.toMatch(/isPublished|passwordHash/);
   });
 
+  it('exposes the hero tagline and filters projects by kind', async () => {
+    await ctx.prisma.profile.update({ where: { id: 1 }, data: { tagline: 'Texto complementario' } });
+    await ctx.prisma.project.create({
+      data: { title: 'Caso', slug: 'caso', shortDescription: 'x', kind: 'PROFESSIONAL', isPublished: true },
+    });
+    await ctx.prisma.project.create({
+      data: { title: 'Personal', slug: 'personal', shortDescription: 'x', isPublished: true },
+    });
+
+    const { body } = await ctx.http().get('/api/public/portfolio').expect(200);
+    expect(body.data.profile.tagline).toBe('Texto complementario');
+    expect(body.data.projectFilters.kinds).toEqual(
+      expect.arrayContaining([
+        { value: 'PROFESSIONAL', count: 1 },
+        { value: 'PERSONAL', count: 1 },
+      ]),
+    );
+    const professional = await ctx.http().get('/api/public/projects?kind=PROFESSIONAL').expect(200);
+    expect(professional.body.data.map((p: { slug: string }) => p.slug)).toEqual(['caso']);
+    await ctx.http().get('/api/public/projects?kind=SECRETO').expect(400);
+  });
+
   it('shows the phone only when marked public', async () => {
     await ctx.prisma.profile.update({ where: { id: 1 }, data: { isPhonePublic: true } });
     const { body } = await ctx.http().get('/api/public/portfolio').expect(200);

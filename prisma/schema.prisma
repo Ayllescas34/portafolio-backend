@@ -84,6 +84,16 @@ enum HighlightKind {
   WORK_STYLE
   INTEREST
   VALUE
+  /// Stages of the end-to-end delivery flow ("Del desarrollo al despliegue").
+  DELIVERY_STAGE
+}
+
+/// Distinguishes professional cases from personal, academic or demo work.
+enum ProjectKind {
+  PROFESSIONAL
+  PERSONAL
+  ACADEMIC
+  DEMO
 }
 
 enum ThemePreference {
@@ -133,6 +143,8 @@ model Profile {
   fullName          String   @map("full_name") @db.VarChar(120)
   professionalTitle String   @map("professional_title") @db.VarChar(160)
   shortBio          String   @map("short_bio") @db.VarChar(400)
+  /// Complementary line shown under the hero statement.
+  tagline           String?  @db.VarChar(300)
   longBio           String?  @map("long_bio") @db.Text
   /// Public location only (city / country), never a street address.
   location          String?  @db.VarChar(120)
@@ -333,8 +345,14 @@ model Project {
   slug             String                  @unique @db.VarChar(160)
   shortDescription String                  @map("short_description") @db.VarChar(300)
   fullDescription  String?                 @map("full_description") @db.Text
+  kind             ProjectKind             @default(PERSONAL)
+  context          String?                 @db.VarChar(1500)
   problem          String?                 @db.VarChar(1500)
   solution         String?                 @db.VarChar(1500)
+  architecture     String?                 @db.VarChar(1500)
+  challenges       String?                 @db.VarChar(1500)
+  /// Only verifiable results; left empty when there is nothing confirmed.
+  outcome          String?                 @db.VarChar(1500)
   role             String?                 @db.VarChar(160)
   category         ProjectCategory         @default(WEB_APP)
   status           ProjectStatus           @default(IN_PROGRESS)
@@ -355,6 +373,7 @@ model Project {
 
   @@index([isPublished, isFeatured, displayOrder])
   @@index([category])
+  @@index([kind])
   @@map("projects")
 }
 

@@ -41,7 +41,7 @@ sesión es más simple y seguro que mantener tokens de larga duración.
 | Método | Ruta | Descripción |
 |---|---|---|
 | GET | `/api/public/portfolio` | Todo lo publicado (perfil, destacados, redes, experiencia, educación, habilidades, certificaciones, proyectos y filtros) en una respuesta |
-| GET | `/api/public/projects?technology=<slug>&category=<CATEGORÍA>` | Proyectos publicados filtrados |
+| GET | `/api/public/projects?technology=<slug>&category=<CATEGORÍA>&kind=<TIPO>` | Proyectos publicados filtrados (`kind`: PROFESSIONAL, PERSONAL, ACADEMIC, DEMO) |
 | GET | `/api/public/projects/:slug` | Detalle (404 si no existe o no está publicado) |
 | POST | `/api/public/contact` | `{ name, email, subject, message, website }` → `202`. `website` es un campo trampa y debe ir vacío. Límite: **3 mensajes cada 10 minutos** |
 
@@ -54,7 +54,7 @@ Recursos con el mismo patrón:
 
 | Recurso | Ruta base |
 |---|---|
-| Destacados de "Sobre mí" | `/profile-highlights` |
+| Destacados del perfil y etapas del flujo (`kind = DELIVERY_STAGE`) | `/profile-highlights` |
 | Experiencia | `/experiences` (incluye `responsibilities[]`, `achievements[]`, `technologyIds[]`) |
 | Educación | `/education` |
 | Certificaciones | `/certifications` |

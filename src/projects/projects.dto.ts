@@ -1,5 +1,5 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { ProjectCategory, ProjectStatus } from '@prisma/client';
+import { ProjectCategory, ProjectKind, ProjectStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -65,6 +65,17 @@ export class CreateProjectDto {
   @MaxLength(10000)
   fullDescription?: string | null;
 
+  /** Professional, personal, academic or demo. */
+  @IsOptional()
+  @IsEnum(ProjectKind)
+  kind?: ProjectKind;
+
+  @IsOptional()
+  @NullableText()
+  @IsString()
+  @MaxLength(1500)
+  context?: string | null;
+
   @IsOptional()
   @NullableText()
   @IsString()
@@ -76,6 +87,25 @@ export class CreateProjectDto {
   @IsString()
   @MaxLength(1500)
   solution?: string | null;
+
+  @IsOptional()
+  @NullableText()
+  @IsString()
+  @MaxLength(1500)
+  architecture?: string | null;
+
+  @IsOptional()
+  @NullableText()
+  @IsString()
+  @MaxLength(1500)
+  challenges?: string | null;
+
+  /** Verifiable results only. */
+  @IsOptional()
+  @NullableText()
+  @IsString()
+  @MaxLength(1500)
+  outcome?: string | null;
 
   @IsOptional()
   @NullableText()
@@ -152,6 +182,10 @@ export class ProjectListQueryDto extends ListQueryDto {
   @IsOptional()
   @IsEnum(ProjectCategory)
   category?: ProjectCategory;
+
+  @IsOptional()
+  @IsEnum(ProjectKind)
+  kind?: ProjectKind;
 
   @IsOptional()
   @IsEnum(ProjectStatus)

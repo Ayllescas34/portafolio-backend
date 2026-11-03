@@ -2,7 +2,8 @@
 
 ## Contenido pendiente de confirmar (desde el panel)
 
-- Responsabilidades, tecnologías y logros en **Canella**, además de modalidad y ubicación.
+- Modalidad, ubicación y logros verificables en **Canella** (responsabilidades y tecnologías ya cargadas).
+- Tecnologías específicas de Canella no confirmadas aún (lenguaje, base de datos, herramientas de CI/CD).
 - Nivel de **inglés** (cualitativo o certificado) y publicarlo.
 - Revisar y publicar el proyecto **Control de Gastos**, y su repositorio si es público.
 - Confirmar y publicar el enlace de **GitHub**; agregar **LinkedIn**.

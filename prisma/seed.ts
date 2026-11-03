@@ -1,14 +1,16 @@
 /**
  * Local seed built ONLY from confirmed information:
  *   - the CV (January 2026 edition), and
- *   - the owner's message: Analista Programador at Canella since February 2026.
+ *   - the owner's messages: Analista Programador (Full Stack) at Canella since
+ *     February 2026, working on .NET 8 migrations, frontend, backend, databases,
+ *     functional/technical testing, CI/CD, OpenShift and IIS deployments.
  *
- * Anything not confirmed is either omitted or stored unpublished (draft) so it
- * never appears on the public site until the owner reviews it in the admin
- * panel. Private data from the CV (street address, references and their phone
- * numbers) is intentionally NOT seeded.
+ * Nothing is invented: no years of experience, percentages, metrics, clients
+ * or confidential details. Unconfirmed items are stored unpublished (drafts).
+ * Private CV data (street address, references) is intentionally NOT seeded.
  *
- * The seed is idempotent: fixed ids / natural keys + upsert.
+ * Idempotent: fixed ids / natural keys + upsert. On existing projects the
+ * owner's publication choice (isPublished) is never overwritten.
  */
 import {
   DatePrecision,
@@ -19,6 +21,7 @@ import {
   Prisma,
   PrismaClient,
   ProjectCategory,
+  ProjectKind,
   ProjectStatus,
   SocialPlatform,
   ThemePreference,
@@ -28,11 +31,15 @@ const prisma = new PrismaClient();
 const date = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
 
 const TECHNOLOGIES = [
+  ['.NET 8', 'dotnet-8'],
   ['Angular', 'angular'],
   ['NestJS', 'nestjs'],
   ['TypeScript', 'typescript'],
   ['PostgreSQL', 'postgresql'],
   ['MySQL', 'mysql'],
+  ['OpenShift', 'openshift'],
+  ['IIS', 'iis'],
+  ['CI/CD', 'ci-cd'],
   ['Prisma', 'prisma'],
   ['Three.js', 'threejs'],
   ['SCSS', 'scss'],
@@ -43,74 +50,103 @@ const TECHNOLOGIES = [
   ['Playwright', 'playwright'],
 ] as const;
 
-/** [category name, slug, skills[]] — taken from "Habilidades y técnicas" of the CV. */
-const SKILLS: [string, string, [name: string, slug: string, featured?: boolean, description?: string][]][] = [
+type SkillRow = [name: string, slug: string, featured?: boolean, description?: string];
+
+/** Professional areas (not a logo cloud). Skills keep their slugs, so re-seeding moves them. */
+const SKILL_AREAS: [name: string, slug: string, description: string, skills: SkillRow[]][] = [
   [
-    'Lenguajes',
-    'lenguajes',
+    'Desarrollo frontend',
+    'frontend',
+    'Interfaces web, formularios y su integración con los servicios de la aplicación.',
     [
+      ['Angular', 'angular', true, 'Angular 17 en adelante'],
       ['TypeScript', 'typescript', true],
       ['JavaScript', 'javascript'],
-      ['PHP', 'php'],
-      ['Java', 'java'],
       ['HTML', 'html'],
       ['CSS', 'css'],
+      ['Implementación de interfaces', 'implementacion-de-interfaces'],
+      ['Integración con APIs', 'integracion-con-apis', false, 'Consumo de servicios REST desde la interfaz'],
+      ['Formularios y validación', 'formularios-y-validacion'],
     ],
   ],
   [
-    'Backend',
+    'Desarrollo backend',
     'backend',
+    'Servicios, APIs REST, lógica de negocio y migración de aplicaciones.',
     [
+      ['.NET 8', 'dotnet-8', true, 'Migración y modernización de aplicaciones'],
       ['NestJS', 'nestjs', true],
       ['Node.js', 'nodejs'],
-      ['Laravel', 'laravel', true],
+      ['Laravel', 'laravel'],
       ['Spring Boot', 'spring-boot'],
+      ['PHP', 'php'],
+      ['Java', 'java'],
+      ['APIs REST', 'apis-rest'],
+      ['Integración entre componentes', 'integracion-entre-componentes'],
     ],
   ],
-  ['Frontend', 'frontend', [['Angular', 'angular', true, 'Angular 17 en adelante']]],
   [
     'Bases de datos',
     'bases-de-datos',
+    'Diseño de bases de datos relacionales, consultas e integración con las aplicaciones.',
     [
       ['PostgreSQL', 'postgresql', true],
-      ['MySQL', 'mysql', true],
+      ['MySQL', 'mysql'],
       ['MongoDB', 'mongodb'],
       ['Oracle', 'oracle'],
+      ['Diseño y modelado relacional', 'modelado-relacional'],
     ],
   ],
   [
-    'Cloud y DevOps',
-    'cloud-devops',
+    'Calidad y pruebas',
+    'calidad-y-pruebas',
+    'Verificación funcional y técnica antes y después de cada publicación.',
     [
+      ['Pruebas funcionales', 'pruebas-funcionales'],
+      ['Pruebas técnicas', 'pruebas-tecnicas'],
+      ['Validación de despliegues', 'validacion-de-despliegues'],
+    ],
+  ],
+  [
+    'DevOps y despliegue',
+    'devops-y-despliegue',
+    'Integración y despliegue continuo, contenedores y publicación de aplicaciones.',
+    [
+      ['OpenShift', 'openshift', true],
+      ['IIS', 'iis', true, 'Publicación y validación de aplicaciones'],
+      ['CI/CD', 'ci-cd', false, 'Integración y despliegue continuo'],
+      ['Contenedores', 'contenedores'],
       ['AWS Amplify', 'aws-amplify'],
       ['AWS S3', 'aws-s3'],
-      ['CI/CD', 'ci-cd'],
     ],
   ],
   [
-    'Herramientas',
-    'herramientas',
+    'Arquitectura y prácticas',
+    'arquitectura-y-practicas',
+    'Código mantenible, control de versiones y documentación técnica.',
     [
+      ['Migración y modernización de aplicaciones', 'modernizacion-de-aplicaciones'],
       ['Git', 'git'],
       ['GitHub', 'github'],
       ['Postman', 'postman'],
-      ['Microsoft Office', 'microsoft-office', false, 'Word y Excel'],
+      ['Documentación técnica', 'documentacion-tecnica'],
     ],
   ],
   [
-    'Soporte técnico',
-    'soporte-tecnico',
-    [['Mantenimiento de computadoras', 'mantenimiento-computadoras', false, 'Mantenimiento predictivo y correctivo']],
-  ],
-  [
-    'Habilidades blandas',
-    'habilidades-blandas',
+    'Competencias complementarias',
+    'competencias-complementarias',
+    'Habilidades de trabajo y soporte respaldadas por la trayectoria.',
     [
       ['Resolución de problemas', 'resolucion-de-problemas'],
       ['Aprendizaje autodidacta', 'aprendizaje-autodidacta'],
+      ['Mantenimiento de computadoras', 'mantenimiento-computadoras', false, 'Mantenimiento predictivo y correctivo'],
+      ['Microsoft Office', 'microsoft-office', false, 'Word y Excel'],
     ],
   ],
 ];
+
+/** Categories from the first version of the seed, removed once empty. */
+const RETIRED_CATEGORIES = ['lenguajes', 'herramientas', 'cloud-devops', 'soporte-tecnico', 'habilidades-blandas'];
 
 /** Fixed ids keep the seed idempotent for entities without a natural key. */
 const IDS = {
@@ -120,10 +156,12 @@ const IDS = {
   muniInternship: '0b9d0f0e-6a1b-4c51-9a35-5f6d2f8a0004',
   umg: '1c8e1a2b-7b2c-4d62-8b46-6a7e3a9b0001',
   kinal: '1c8e1a2b-7b2c-4d62-8b46-6a7e3a9b0002',
-  hlProblems: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0001',
-  hlLearning: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0002',
-  hlCode: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0003',
-  hlBackend: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0004',
+  hl1: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0001',
+  hl2: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0002',
+  hl3: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0003',
+  hl4: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0004',
+  hl5: '2d7f2b3c-8c3d-4e73-9c57-7b8f4bac0005',
+  stage: (n: number) => `4f5b4d5e-0e5f-4a95-8e79-9dab6cde000${n}`,
   englishPending: '3e6a3c4d-9d4e-4f84-8d68-8c9a5cbd0001',
 } as const;
 
@@ -132,9 +170,9 @@ const ANTIGUA = 'Antigua Guatemala, Guatemala';
 
 async function seedSettingsAndProfile(tx: Prisma.TransactionClient) {
   const settings = {
-    siteTitle: 'Alejandro Flores Yllescas · Analista Programador',
+    siteTitle: 'Alejandro Flores Yllescas | Analista Programador Full Stack',
     siteDescription:
-      'Portafolio y hoja de vida de Alejandro Flores Yllescas: Analista Programador con experiencia en desarrollo backend, APIs REST con NestJS y bases de datos PostgreSQL y MySQL.',
+      'Portafolio profesional de Alejandro Flores Yllescas, Analista Programador Full Stack con experiencia en desarrollo y modernización de aplicaciones, .NET 8, bases de datos, pruebas, DevOps, OpenShift e IIS.',
     defaultTheme: ThemePreference.DARK,
     defaultLocale: 'es',
     contactFormEnabled: true,
@@ -143,14 +181,19 @@ async function seedSettingsAndProfile(tx: Prisma.TransactionClient) {
 
   const profile = {
     fullName: 'Alejandro Flores Yllescas',
-    professionalTitle: 'Analista Programador · Desarrollo backend',
+    professionalTitle: 'Analista Programador Full Stack',
     shortBio:
-      'Estudiante de Ingeniería en Sistemas con formación técnica y experiencia en desarrollo backend. Trabajo con NestJS, Laravel y PostgreSQL, enfocado en resolver problemas y escribir código escalable y eficiente.',
-    longBio:
-      'Actualmente me desempeño como Analista Programador en Canella. Antes formé parte de la Municipalidad de Antigua Guatemala, donde pasé de las prácticas profesionales y el soporte técnico al rol de desarrollador: gestioné y diseñé bases de datos relacionales en PostgreSQL y MySQL y desarrollé APIs REST con NestJS y Angular.\n\nMi formación técnica como Perito en Computación se complementa con la carrera de Ingeniería en Sistemas de Información, que curso actualmente, y con aprendizaje autodidacta constante.',
+      'Desarrollo, modernización y despliegue de aplicaciones empresariales, con participación en frontend, backend, bases de datos, pruebas y procesos DevOps.',
+    tagline:
+      'Experiencia en migración de aplicaciones hacia .NET 8, integración y despliegue continuo, OpenShift y publicación y validación de soluciones en IIS.',
+    longBio: [
+      'Trabajo en el desarrollo y la modernización de aplicaciones empresariales. Participo en las distintas capas de una solución —interfaces, servicios, lógica de negocio y bases de datos— y acompaño el software más allá del código: pruebas, preparación para el despliegue y validación en los ambientes donde se publica.',
+      'Actualmente, en Canella, colaboro en la migración de aplicaciones hacia .NET 8 y en los procesos de integración y despliegue continuo, incluidos los flujos con OpenShift y la publicación y validación de aplicaciones en IIS.',
+      'Antes, en la Municipalidad de Antigua Guatemala, pasé de las prácticas profesionales y el soporte técnico al desarrollo, donde diseñé bases de datos relacionales en PostgreSQL y MySQL y construí APIs REST con NestJS y Angular. Complemento esta experiencia con la carrera de Ingeniería en Sistemas de Información, que curso actualmente.',
+    ].join('\n\n'),
     location: ANTIGUA,
     publicEmail: 'ayllescas34@gmail.com',
-    // Stored for the printable CV / admin, hidden from the public site until confirmed.
+    // Stored for the admin, hidden from the public site until confirmed.
     phone: '+502 0000-0000',
     isPhonePublic: false,
     availability: null,
@@ -159,34 +202,69 @@ async function seedSettingsAndProfile(tx: Prisma.TransactionClient) {
 
   const highlights: [string, HighlightKind, string, string, number][] = [
     [
-      IDS.hlProblems,
+      IDS.hl1,
       HighlightKind.WORK_STYLE,
-      'Enfoque en resolver problemas',
-      'Parto de entender el problema para llegar a una solución que funcione en el contexto real del proyecto.',
+      'Visión de ciclo completo',
+      'Sigo cada cambio desde su desarrollo hasta su despliegue y validación, no solo hasta que el código compila.',
       0,
     ],
     [
-      IDS.hlLearning,
+      IDS.hl2,
       HighlightKind.WORK_STYLE,
-      'Aprendizaje autodidacta',
-      'Incorporo nuevas herramientas y tecnologías por cuenta propia cuando el trabajo lo requiere.',
+      'Calidad antes de publicar',
+      'Las pruebas funcionales y técnicas forman parte del proceso de entrega, antes y después de cada publicación.',
       1,
     ],
     [
-      IDS.hlCode,
+      IDS.hl3,
+      HighlightKind.WORK_STYLE,
+      'Aprendizaje continuo',
+      'Incorporo nuevas herramientas y tecnologías de forma autodidacta cuando el trabajo lo requiere.',
+      2,
+    ],
+    [
+      IDS.hl4,
       HighlightKind.VALUE,
-      'Código escalable y eficiente',
-      'Busco que el código sea claro, mantenible y preparado para crecer.',
+      'Modernización tecnológica',
+      'Participación en la migración y modernización de aplicaciones empresariales hacia .NET 8.',
       0,
     ],
     [
-      IDS.hlBackend,
+      IDS.hl5,
       HighlightKind.VALUE,
-      'Backend y bases de datos',
-      'Experiencia diseñando bases de datos relacionales en PostgreSQL y MySQL y desarrollando APIs REST con NestJS.',
+      'Código mantenible',
+      'Busco soluciones claras, escalables y fáciles de mantener por el resto del equipo.',
       1,
     ],
   ];
+  const stages: [string, string][] = [
+    [
+      'Experiencia de usuario',
+      'Interfaces claras y consistentes, con formularios y estados pensados para quien usa la aplicación.',
+    ],
+    [
+      'Desarrollo frontend',
+      'Implementación y mantenimiento de funcionalidades de interfaz integradas con los servicios.',
+    ],
+    [
+      'Backend y lógica de negocio',
+      'Servicios, APIs y reglas de negocio, incluida la migración de aplicaciones hacia .NET 8.',
+    ],
+    ['Datos', 'Modelado, consultas e integración de bases de datos relacionales con las aplicaciones.'],
+    ['Pruebas', 'Pruebas funcionales y técnicas para verificar cada cambio antes de publicarlo.'],
+    [
+      'Integración y entrega continua',
+      'Participación en flujos de integración y despliegue continuo, incluidos los de OpenShift.',
+    ],
+    [
+      'Despliegue y validación',
+      'Preparación, publicación y validación de aplicaciones en IIS, con seguimiento posterior.',
+    ],
+  ];
+  stages.forEach(([title, description], i) =>
+    highlights.push([IDS.stage(i + 1), HighlightKind.DELIVERY_STAGE, title, description, i]),
+  );
+
   for (const [id, kind, title, description, displayOrder] of highlights) {
     const data = { kind, title, description, displayOrder, isPublished: true };
     await tx.profileHighlight.upsert({ where: { id }, create: { id, ...data }, update: data });
@@ -215,14 +293,20 @@ async function seedTechnologies(tx: Prisma.TransactionClient): Promise<Map<strin
 }
 
 async function seedSkills(tx: Prisma.TransactionClient) {
-  for (const [categoryOrder, [name, slug, skills]] of SKILLS.entries()) {
+  for (const [categoryOrder, [name, slug, description, skills]] of SKILL_AREAS.entries()) {
     const category = await tx.skillCategory.upsert({
       where: { slug },
-      create: { name, slug, displayOrder: categoryOrder },
-      update: { name, displayOrder: categoryOrder },
+      create: { name, slug, description, displayOrder: categoryOrder },
+      update: { name, description, displayOrder: categoryOrder },
     });
-    for (const [order, [skillName, skillSlug, featured = false, description = null]] of skills.entries()) {
-      const data = { categoryId: category.id, name: skillName, description, isFeatured: featured, displayOrder: order };
+    for (const [order, [skillName, skillSlug, featured = false, skillDescription = null]] of skills.entries()) {
+      const data = {
+        categoryId: category.id,
+        name: skillName,
+        description: skillDescription,
+        isFeatured: featured,
+        displayOrder: order,
+      };
       await tx.skill.upsert({ where: { slug: skillSlug }, create: { slug: skillSlug, ...data }, update: data });
     }
   }
@@ -231,8 +315,8 @@ async function seedSkills(tx: Prisma.TransactionClient) {
   // Kept as an unpublished draft so the owner sets a qualitative level first.
   const languages = await tx.skillCategory.upsert({
     where: { slug: 'idiomas' },
-    create: { name: 'Idiomas', slug: 'idiomas', displayOrder: SKILLS.length },
-    update: {},
+    create: { name: 'Idiomas', slug: 'idiomas', displayOrder: SKILL_AREAS.length },
+    update: { displayOrder: SKILL_AREAS.length },
   });
   await tx.skill.upsert({
     where: { slug: 'ingles' },
@@ -246,6 +330,9 @@ async function seedSkills(tx: Prisma.TransactionClient) {
     },
     update: {},
   });
+
+  // Categories from the previous taxonomy are removed only when they are empty.
+  await tx.skillCategory.deleteMany({ where: { slug: { in: RETIRED_CATEGORIES }, skills: { none: {} } } });
 }
 
 async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, string>) {
@@ -258,12 +345,12 @@ async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, st
     startDate: Date;
     endDate: Date | null;
     isCurrent: boolean;
+    summary: string | null;
     responsibilities: string[];
     technologies: string[];
   };
   const rows: Row[] = [
     {
-      // Confirmed by the owner. Responsibilities intentionally left empty until confirmed.
       id: IDS.canella,
       company: 'Canella',
       position: 'Analista Programador',
@@ -272,8 +359,20 @@ async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, st
       startDate: date('2026-02-01'),
       endDate: null,
       isCurrent: true,
-      responsibilities: [],
-      technologies: [],
+      summary:
+        'Enfoque Full Stack: desarrollo y modernización de aplicaciones empresariales, desde la implementación y las pruebas hasta el despliegue y la validación.',
+      responsibilities: [
+        'Desarrollo y modernización de aplicaciones empresariales.',
+        'Participación en migraciones de aplicaciones hacia .NET 8.',
+        'Implementación y mantenimiento de funcionalidades de frontend y backend.',
+        'Trabajo con bases de datos e integración entre componentes.',
+        'Ejecución de pruebas funcionales y técnicas.',
+        'Participación en procesos de integración y despliegue continuo.',
+        'Preparación, publicación y validación de aplicaciones en IIS.',
+        'Participación en flujos de despliegue mediante OpenShift.',
+        'Colaboración durante las distintas etapas del ciclo de desarrollo y entrega.',
+      ],
+      technologies: ['dotnet-8', 'openshift', 'iis', 'ci-cd'],
     },
     {
       id: IDS.muniDev,
@@ -284,6 +383,7 @@ async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, st
       startDate: date('2025-02-01'),
       endDate: date('2026-01-01'),
       isCurrent: false,
+      summary: null,
       responsibilities: [
         'Gestión y diseño de bases de datos relacionales en PostgreSQL y MySQL.',
         'Desarrollo de APIs REST usando NestJS y Angular.',
@@ -299,6 +399,7 @@ async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, st
       startDate: date('2024-11-01'),
       endDate: date('2025-01-01'),
       isCurrent: false,
+      summary: null,
       responsibilities: ['Diagnóstico y mantenimiento de equipos informáticos.'],
       technologies: [],
     },
@@ -311,6 +412,7 @@ async function seedExperience(tx: Prisma.TransactionClient, tech: Map<string, st
       startDate: date('2024-08-01'),
       endDate: date('2024-10-01'),
       isCurrent: false,
+      summary: null,
       responsibilities: [
         'Apoyo en tareas del Departamento de Informática.',
         'Documentación técnica y soporte básico de sistemas.',
@@ -369,47 +471,101 @@ async function seedEducation(tx: Prisma.TransactionClient) {
 async function seedProjects(tx: Prisma.TransactionClient, tech: Map<string, string>) {
   const projects = [
     {
+      // General description only: no systems, clients, repositories or internal data.
+      slug: 'modernizacion-aplicaciones-empresariales',
+      title: 'Modernización de aplicaciones empresariales',
+      kind: ProjectKind.PROFESSIONAL,
+      shortDescription:
+        'Participación en la migración de aplicaciones empresariales hacia .NET 8, desde el desarrollo y las pruebas hasta el despliegue y la validación.',
+      context:
+        'Trabajo actual como Analista Programador en Canella, dentro de un entorno de aplicaciones empresariales en proceso de modernización.',
+      problem: null,
+      solution:
+        'Migración de aplicaciones hacia .NET 8 con un enfoque de ciclo completo: implementación en frontend y backend, trabajo con bases de datos, pruebas funcionales y técnicas, integración y despliegue continuo con OpenShift, y publicación y validación en IIS.',
+      architecture: null,
+      challenges: null,
+      outcome: null,
+      role: 'Analista Programador Full Stack',
+      responsibilities: [
+        'Migración y modernización de aplicaciones hacia .NET 8.',
+        'Implementación de funcionalidades de frontend y backend.',
+        'Pruebas funcionales y técnicas.',
+        'Integración y despliegue continuo mediante OpenShift.',
+        'Publicación y validación de aplicaciones en IIS.',
+      ],
+      category: ProjectCategory.WEB_APP,
+      status: ProjectStatus.IN_PROGRESS,
+      startDate: date('2026-02-01'),
+      isFeatured: true,
+      publishOnCreate: true,
+      technologies: ['dotnet-8', 'openshift', 'iis', 'ci-cd'],
+    },
+    {
       slug: 'portafolio-profesional',
       title: 'Portafolio profesional e interactivo',
+      kind: ProjectKind.PERSONAL,
       shortDescription:
-        'Portafolio y hoja de vida administrable: el contenido vive en PostgreSQL y se gestiona desde un panel propio.',
+        'Portafolio y hoja de vida administrables: el contenido vive en PostgreSQL y se gestiona desde un panel propio.',
+      context: 'Proyecto personal para presentar el perfil profesional y mantenerlo actualizado sin editar código.',
       problem:
         'Mantener un CV y un portafolio actualizados implicaba editar documentos a mano y no mostraba cómo construyo software.',
       solution:
         'Aplicación full stack con API REST en NestJS, modelo relacional en PostgreSQL con Prisma, sitio público en Angular con una escena Three.js y un panel administrativo con autenticación local.',
+      architecture:
+        'Frontend Angular (componentes standalone y signals) separado de una API NestJS por capas; PostgreSQL con migraciones versionadas; sesión mediante cookie httpOnly; pruebas unitarias, de integración y end-to-end.',
+      challenges: null,
+      outcome: 'Aplicación funcionando en entorno local, con su suite de pruebas automatizadas en verde.',
       role: 'Proyecto personal',
+      responsibilities: [],
       category: ProjectCategory.WEB_APP,
       status: ProjectStatus.IN_PROGRESS,
-      isFeatured: true,
-      isPublished: true,
+      startDate: null,
+      isFeatured: false,
+      publishOnCreate: true,
       technologies: ['angular', 'nestjs', 'typescript', 'postgresql', 'prisma', 'threejs', 'scss', 'playwright'],
     },
     {
-      // Draft: described from the project's own documentation; publish after review.
+      // Described from the project's own documentation.
       slug: 'control-de-gastos',
       title: 'Control de Gastos (app móvil)',
+      kind: ProjectKind.PERSONAL,
       shortDescription:
         'Aplicación móvil personal para registrar ingresos y gastos, con presupuestos, metas de ahorro y reportes mensuales.',
+      context:
+        'Proyecto personal de control financiero, con una aplicación móvil multiplataforma y un backend planificado.',
       problem: 'Llevar el control de finanzas personales de forma ordenada y consultable desde el teléfono.',
       solution:
         'App en React Native con TypeScript y persistencia local en SQLite (Drizzle ORM): movimientos, cuentas, categorías, presupuestos, metas de ahorro, respaldo en JSON y reportes mensuales.',
+      architecture:
+        'Organización por funcionalidades con dominio, datos y pantallas separados; persistencia local en SQLite con migraciones; lógica de negocio en TypeScript.',
+      challenges: null,
+      outcome: null,
       role: 'Proyecto personal',
+      responsibilities: [],
       category: ProjectCategory.MOBILE_APP,
       status: ProjectStatus.IN_PROGRESS,
+      startDate: null,
       isFeatured: false,
-      isPublished: false,
+      publishOnCreate: false,
       technologies: ['react-native', 'typescript', 'sqlite', 'drizzle-orm'],
     },
   ];
-  for (const [displayOrder, { slug, technologies, ...fields }] of projects.entries()) {
-    const project = await tx.project.upsert({
+
+  for (const [displayOrder, project] of projects.entries()) {
+    const { slug, technologies, responsibilities, publishOnCreate, ...fields } = project;
+    const saved = await tx.project.upsert({
       where: { slug },
-      create: { slug, ...fields, displayOrder },
+      create: { slug, ...fields, displayOrder, isPublished: publishOnCreate },
+      // isPublished is deliberately not updated: it is the owner's decision in the admin panel.
       update: { ...fields, displayOrder },
     });
-    await tx.projectTechnology.deleteMany({ where: { projectId: project.id } });
+    await tx.projectTechnology.deleteMany({ where: { projectId: saved.id } });
     await tx.projectTechnology.createMany({
-      data: technologies.map((s) => ({ projectId: project.id, technologyId: tech.get(s)! })),
+      data: technologies.map((s) => ({ projectId: saved.id, technologyId: tech.get(s)! })),
+    });
+    await tx.projectResponsibility.deleteMany({ where: { projectId: saved.id } });
+    await tx.projectResponsibility.createMany({
+      data: responsibilities.map((content, order) => ({ projectId: saved.id, content, displayOrder: order })),
     });
   }
 }
@@ -426,7 +582,7 @@ async function main() {
     },
     { timeout: 30_000 },
   );
-  console.log('Seed aplicado: perfil, experiencia, educación, habilidades y proyectos.');
+  console.log('Seed aplicado: perfil, flujo de entrega, experiencia, educación, capacidades y proyectos.');
 }
 
 main()

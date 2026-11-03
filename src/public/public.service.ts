@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, ProjectCategory } from '@prisma/client';
+import { Prisma, ProjectCategory, ProjectKind } from '@prisma/client';
 import { EXPERIENCE_INCLUDE, toExperienceView } from '../experiences/experience.mapper';
 import { PrismaService } from '../prisma/prisma.service';
 import { PROJECT_INCLUDE, ProjectView, toProjectView } from '../projects/project.mapper';
@@ -100,6 +100,7 @@ export class PublicService {
         fullName: profile.fullName,
         professionalTitle: profile.professionalTitle,
         shortBio: profile.shortBio,
+        tagline: profile.tagline,
         longBio: profile.longBio,
         location: profile.location,
         publicEmail: profile.publicEmail,
@@ -134,6 +135,7 @@ export class PublicService {
     const where: Prisma.ProjectWhereInput = {
       isPublished: true,
       ...(query.category && { category: query.category }),
+      ...(query.kind && { kind: query.kind }),
       ...(query.technology && { technologies: { some: { technology: { slug: query.technology } } } }),
     };
     const projects = await this.prisma.project.findMany({
@@ -158,8 +160,10 @@ export class PublicService {
 function projectFilters(projects: PublicProject[]) {
   const technologies = new Map<string, { name: string; slug: string; count: number }>();
   const categories = new Map<ProjectCategory, number>();
+  const kinds = new Map<ProjectKind, number>();
   for (const project of projects) {
     categories.set(project.category, (categories.get(project.category) ?? 0) + 1);
+    kinds.set(project.kind, (kinds.get(project.kind) ?? 0) + 1);
     for (const tech of project.technologies) {
       const entry = technologies.get(tech.slug) ?? { name: tech.name, slug: tech.slug, count: 0 };
       entry.count++;
@@ -169,5 +173,6 @@ function projectFilters(projects: PublicProject[]) {
   return {
     technologies: [...technologies.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
     categories: [...categories.entries()].map(([value, count]) => ({ value, count })),
+    kinds: [...kinds.entries()].map(([value, count]) => ({ value, count })),
   };
 }

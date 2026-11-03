@@ -35,6 +35,13 @@ export class UpdateProfileDto {
   @MaxLength(400)
   shortBio!: string;
 
+  /** Complementary hero line (e.g. technologies and delivery scope). */
+  @IsOptional()
+  @NullableText()
+  @IsString()
+  @MaxLength(300)
+  tagline?: string | null;
+
   @IsOptional()
   @NullableText()
   @IsString()

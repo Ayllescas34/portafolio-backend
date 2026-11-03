@@ -210,6 +210,19 @@ erDiagram
 | **Sin porcentajes de dominio** (`proficiency_label` cualitativo con CHECK sin `%`) | Requisito del proyecto: no usar métricas arbitrarias. |
 | **Rutas de archivo validadas** (`/uploads/<uuid>.<ext>` o `https://`) | Impide `javascript:`, rutas relativas maliciosas y SVG con scripts. |
 
+## Evolución: perfil ejecutivo (migración `20261103010000_executive_profile`)
+
+Migración aditiva (no modifica ni borra datos):
+
+- `profile.tagline`: texto complementario del inicio.
+- `projects.kind` (`PROFESSIONAL | PERSONAL | ACADEMIC | DEMO`, índice propio) y campos de caso:
+  `context`, `architecture`, `challenges`, `outcome` (este último solo para resultados verificables).
+- `HighlightKind.DELIVERY_STAGE`: las etapas de "Del desarrollo al despliegue" son destacados
+  ordenables desde el panel, sin una tabla nueva.
+
+El seed no sobrescribe `is_published` de proyectos existentes: publicar u ocultar es una decisión
+del propietario en el panel.
+
 ## Restricciones e índices
 
 - **Únicos:** `admin_users.email`, slugs de categorías/habilidades/tecnologías/proyectos,

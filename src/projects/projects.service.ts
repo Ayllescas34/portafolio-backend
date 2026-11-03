@@ -21,6 +21,7 @@ export class ProjectsService {
       ...(query.isPublished !== undefined && { isPublished: query.isPublished }),
       ...(query.isFeatured !== undefined && { isFeatured: query.isFeatured }),
       ...(query.category && { category: query.category }),
+      ...(query.kind && { kind: query.kind }),
       ...(query.status && { status: query.status }),
       ...(query.search && {
         OR: [

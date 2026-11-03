@@ -119,7 +119,10 @@ Requisitos: Node.js 22, PostgreSQL 18 y Git. Chrome solo para las pruebas E2E.
 - **Menú:** lleva a cada sección y marca la sección visible. En el teléfono se abre con el botón ☰.
 - **Tema:** el botón de sol o luna cambia entre oscuro y claro, y recuerda tu elección.
 - **Proyectos:** filtra por tecnología o categoría. La dirección cambia (por ejemplo
-  `?tecnologia=nestjs`), así que puedes compartir el enlace ya filtrado.
+  `?tipo=PROFESSIONAL&tecnologia=nestjs`), así que puedes compartir el enlace ya filtrado.
+  Los casos profesionales muestran una nota de confidencialidad.
+- **Capacidades:** el flujo "Del desarrollo al despliegue" y las capacidades por área salen del
+  panel (destacados de tipo *Etapa del ciclo de entrega* y categorías de habilidades).
 - **Hoja de vida (`/cv`):** "Imprimir / Guardar PDF" abre el diálogo del navegador. Elige
   "Guardar como PDF" para obtener una versión pública. El PDF original con tus datos privados
   nunca se publica.
@@ -137,13 +140,13 @@ El panel no aparece enlazado en el sitio público: se accede escribiendo la dire
 |---|---|
 | **Panel** | Totales, borradores ocultos y mensajes nuevos. |
 | **Mensajes** | Leer (se marca como leído al abrirlo), responder por correo, archivar o eliminar. |
-| **Perfil profesional** | Nombre, cargo, descripciones, ubicación, correo y teléfono públicos, foto y CV público en PDF. |
-| **Sobre mí: destacados** | Forma de trabajar, valor que aportas e intereses técnicos. |
+| **Perfil profesional** | Nombre, cargo, propuesta y texto complementario del inicio, presentación, ubicación, correo y teléfono públicos, foto y CV público en PDF. |
+| **Perfil: destacados y flujo** | Forma de trabajo, aporte, intereses y las etapas de "Del desarrollo al despliegue". |
 | **Enlaces sociales** | GitHub, LinkedIn, etc. |
 | **Configuración del sitio** | Título y descripción para buscadores y redes, tema por defecto, activar o desactivar el formulario. |
 | **Experiencia / Educación / Certificaciones** | Trayectoria. Las responsabilidades y los logros se agregan línea por línea. |
 | **Categorías / Habilidades / Tecnologías** | Habilidades del CV (sin porcentajes) y etiquetas para los proyectos. |
-| **Proyectos** | Problema, solución, rol, tecnologías, enlaces, portada y capturas, con vista previa de la tarjeta. |
+| **Proyectos** | Casos con tipo (profesional, personal, académico, demostración), contexto, problema, solución, arquitectura, retos, resultado, rol, tecnologías, enlaces, portada y capturas, con vista previa de la tarjeta. |
 
 Acciones comunes en los listados:
 
@@ -166,7 +169,7 @@ sesiones. **Cerrar sesión** invalida la sesión en el servidor.
 
 ### Pendientes recomendados (contenido sin confirmar)
 
-1. **Experiencia → Canella:** responsabilidades, tecnologías, logros y modalidad.
+1. **Experiencia → Canella:** modalidad, ubicación y logros verificables (las responsabilidades ya están cargadas).
 2. **Habilidades → Inglés:** escribe un nivel cualitativo y publícalo.
 3. **Proyectos → Control de Gastos:** revisa el texto y publícalo si quieres mostrarlo.
 4. **Enlaces sociales → GitHub:** confirma la URL y publícalo; agrega LinkedIn.
