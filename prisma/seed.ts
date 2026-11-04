@@ -517,11 +517,11 @@ async function seedProjects(tx: Prisma.TransactionClient, tech: Map<string, stri
       // Described from the public repository.
       slug: 'hotel-quinta-vista-verde',
       title: 'Hotel Quinta Vista Verde (sitio web)',
-      kind: ProjectKind.PERSONAL,
+      kind: ProjectKind.PROFESSIONAL,
       shortDescription:
         'Sitio web de un hotel familiar en Antigua Guatemala, con panel de administración de contenidos y consultas directas por WhatsApp.',
       context:
-        'Sitio público del hotel: habitaciones, carta de desayunos, promociones, galería, experiencias, reseñas, ubicación y contacto.',
+        'Proyecto para un cliente. Sitio público del hotel: habitaciones, carta de desayunos, promociones, galería, experiencias, reseñas, ubicación y contacto.',
       problem: null,
       solution:
         'Aplicación en Next.js con Payload CMS integrado: el contenido de cada sección se edita desde un panel de administración, sin tocar código. Las habitaciones y los desayunos abren una conversación de WhatsApp con un mensaje ya preparado.',
