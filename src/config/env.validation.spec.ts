@@ -22,6 +22,8 @@ describe('validateEnv', () => {
     const env = validateEnv({ ...valid, PORT: '3100', COOKIE_SECURE: 'true', SWAGGER_ENABLED: 'false' });
     expect(env.PORT).toBe(3100);
     expect(env.COOKIE_SECURE).toBe(true);
+    expect(env.TRUST_PROXY_HOPS).toBe(0);
+    expect(validateEnv({ ...valid, TRUST_PROXY_HOPS: '2' }).TRUST_PROXY_HOPS).toBe(2);
     expect(env.SWAGGER_ENABLED).toBe(false);
   });
 
@@ -35,6 +37,7 @@ describe('validateEnv', () => {
 
   it('refuses invalid booleans instead of guessing', () => {
     expect(() => validateEnv({ ...valid, COOKIE_SECURE: 'yes' })).toThrow(/COOKIE_SECURE/);
+    expect(() => validateEnv({ ...valid, TRUST_PROXY_HOPS: '-1' })).toThrow(/TRUST_PROXY_HOPS/);
   });
 });
 

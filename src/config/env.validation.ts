@@ -56,6 +56,12 @@ export class EnvironmentVariables {
   @IsBoolean()
   RATE_LIMIT_ENABLED = true;
 
+  /** Reverse proxies in front of the API. Sets the real client IP for rate limiting. */
+  @IsInt()
+  @Min(0)
+  @Max(5)
+  TRUST_PROXY_HOPS = 0;
+
   @IsString()
   @IsNotEmpty()
   UPLOADS_DIR = 'uploads';
@@ -93,6 +99,7 @@ export function validateEnv(raw: Record<string, unknown>): EnvironmentVariables 
     COOKIE_SECURE: toBoolean(raw.COOKIE_SECURE, defaults.COOKIE_SECURE),
     SWAGGER_ENABLED: toBoolean(raw.SWAGGER_ENABLED, defaults.SWAGGER_ENABLED),
     RATE_LIMIT_ENABLED: toBoolean(raw.RATE_LIMIT_ENABLED, defaults.RATE_LIMIT_ENABLED),
+    TRUST_PROXY_HOPS: toInt(raw.TRUST_PROXY_HOPS, defaults.TRUST_PROXY_HOPS),
     UPLOADS_DIR: raw.UPLOADS_DIR ?? defaults.UPLOADS_DIR,
   });
 

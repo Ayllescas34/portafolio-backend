@@ -20,6 +20,7 @@ export function configureApp(app: NestExpressApplication): void {
 
   app.setGlobalPrefix(API_PREFIX);
   app.disable('x-powered-by');
+  app.set('trust proxy', config.trustProxyHops);
   app.use(helmet());
   app.use(cookieParser());
   app.useBodyParser('json', { limit: '100kb' });

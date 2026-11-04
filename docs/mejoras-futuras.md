@@ -9,18 +9,15 @@
 - Foto de perfil, capturas de proyectos y una versión pública del CV en PDF.
 - Certificaciones o cursos, si existen.
 
-## Producción (fase siguiente)
+## Producción
 
-1. Hosting: frontend estático (CDN) y API en contenedor; PostgreSQL gestionado con copias de seguridad.
-2. Variables de producción: `NODE_ENV=production`, `COOKIE_SECURE=true`, `JWT_SECRET` nuevo,
-   `CORS_ORIGINS` con el dominio real, `SWAGGER_ENABLED=false` o protegido.
-3. Mismo dominio para frontend y API (proxy inverso) para mantener `SameSite=Strict`.
-4. Almacenamiento de archivos en un servicio de objetos (S3 o similar) en lugar de `uploads/`.
+La arquitectura actual está en [despliegue.md](despliegue.md). Quedan pendientes:
+
+1. Dominio propio, con HTTPS también entre CloudFront y el servidor.
+2. Monitoreo de disponibilidad y alertas.
+3. Envío real de notificaciones de contacto (correo transaccional), con consentimiento.
+4. Base de datos gestionada y archivos en S3, si el tráfico o el valor de los datos lo justifican.
 5. Rate limiting con almacenamiento compartido si hay varias instancias.
-6. CSP con *hash* para el script de tema de `index.html`; HSTS.
-7. Envío real de notificaciones de contacto (correo transaccional), con consentimiento.
-8. Dominio, certificado TLS y monitoreo de disponibilidad.
-9. Compresión gzip o Brotli para las respuestas de la API en el proxy o la CDN.
 
 ## Producto
 
