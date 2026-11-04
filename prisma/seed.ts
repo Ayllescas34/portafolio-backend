@@ -579,7 +579,7 @@ async function seedProjects(tx: Prisma.TransactionClient, tech: Map<string, stri
       architecture:
         'Frontend Angular (componentes standalone y signals) separado de una API NestJS por capas; PostgreSQL con migraciones versionadas; sesión mediante cookie httpOnly; pruebas unitarias, de integración y end-to-end.',
       challenges: null,
-      outcome: 'Aplicación funcionando en entorno local, con su suite de pruebas automatizadas en verde.',
+      outcome: 'Aplicación publicada en AWS, con su suite de pruebas automatizadas en verde.',
       role: 'Proyecto personal',
       responsibilities: [],
       category: ProjectCategory.WEB_APP,

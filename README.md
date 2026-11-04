@@ -7,7 +7,7 @@ profesional vive en PostgreSQL y se edita desde un panel propio, sin tocar códi
 
 El sitio y el panel están en [portafolio-front](https://github.com/Ayllescas34/portafolio-front).
 
-> **Estado:** funciona en entorno local. Todavía no está desplegado.
+> **Estado:** publicado en https://d2nzry7t82pbvf.cloudfront.net
 
 ## Stack
 
@@ -38,6 +38,7 @@ El sitio y el panel están en [portafolio-front](https://github.com/Ayllescas34/
 - [Modelo de datos](docs/modelo-de-datos.md)
 - [API](docs/api.md)
 - [Decisiones técnicas](docs/decisiones-tecnicas.md)
+- [Manual de AWS](docs/MANUAL-AWS.md)
 - [Despliegue en AWS](docs/despliegue.md)
 - [Mejoras futuras](docs/mejoras-futuras.md)
 

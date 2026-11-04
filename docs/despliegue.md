@@ -47,6 +47,12 @@ git clone https://github.com/Ayllescas34/portafolio-backend.git /tmp/portafolio-
 SITE_ORIGIN=https://xxxx.cloudfront.net BACKUP_BUCKET=<bucket> bash /tmp/portafolio-deploy/deploy/server-setup.sh
 ```
 
+## Contenido inicial
+
+El contenido se carga una sola vez, al crear el servidor. Después se administra desde el panel:
+volver a ejecutar `db:seed` en producción reemplaza lo editado en perfil, experiencia, educación,
+habilidades y proyectos.
+
 ## Publicar cambios
 
 - **API:** `sudo bash /opt/portafolio/api/deploy/update.sh`, en el servidor.
