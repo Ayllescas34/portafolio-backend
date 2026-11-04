@@ -135,8 +135,15 @@ El contenido no se publica así: se edita desde el panel y se ve al instante.
 | Error `502` o `504` | La API está caída: revisa sus registros y reiníciala |
 | No encuentras tus recursos | La región: debe ser Ohio |
 | `aws` dice que la sesión expiró | Ejecuta `aws login` |
-| Olvidaste la contraseña del panel | En Session Manager, entra a la API y ejecuta `admin:create` con tu correo |
+| Olvidaste la contraseña del panel | El comando de abajo, con el mismo correo de tu cuenta |
 | Muy lento durante un rato | Saldo de créditos de CPU en la sección 3 |
+
+**Restablecer la contraseña del panel**, en la terminal de Session Manager. La contraseña no se ve al
+escribirla:
+
+```bash
+sudo -u portafolio -H bash -c 'cd /opt/portafolio/api; export PATH=/snap/node/current/bin:$PATH; set -a; . /etc/portafolio/api.env; set +a; npx ts-node src/cli/create-admin.ts'
+```
 
 ## 10. Qué no tocar
 
