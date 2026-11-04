@@ -6,7 +6,7 @@ APP_DIR=/opt/portafolio/api
 ENV_FILE=/etc/portafolio/api.env
 
 as_app() {
-  sudo -u portafolio -H bash -c "set -euo pipefail; cd $APP_DIR; export PATH=/snap/bin:\$PATH NODE_OPTIONS=--max-old-space-size=768; set -a; . $ENV_FILE; set +a; export NODE_ENV=development; $1"
+  sudo -u portafolio -H bash -c "set -euo pipefail; cd $APP_DIR; export PATH=/snap/node/current/bin:\$PATH NODE_OPTIONS=--max-old-space-size=768; set -a; . $ENV_FILE; set +a; export NODE_ENV=development; $1"
 }
 
 as_app 'git fetch --quiet origin main && git reset --quiet --hard origin/main'
