@@ -38,6 +38,7 @@ El sitio y el panel están en [portafolio-front](https://github.com/Ayllescas34/
 - [Modelo de datos](docs/modelo-de-datos.md)
 - [API](docs/api.md)
 - [Decisiones técnicas](docs/decisiones-tecnicas.md)
+- [Manual de AWS](docs/MANUAL-AWS.md)
 - [Despliegue en AWS](docs/despliegue.md)
 - [Mejoras futuras](docs/mejoras-futuras.md)
 
