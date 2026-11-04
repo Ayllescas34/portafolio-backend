@@ -48,6 +48,10 @@ export class AppConfigService {
     return this.config.get('RATE_LIMIT_ENABLED', { infer: true });
   }
 
+  get trustProxyHops(): number {
+    return this.config.get('TRUST_PROXY_HOPS', { infer: true });
+  }
+
   get uploadsDir(): string {
     const dir = this.config.get('UPLOADS_DIR', { infer: true });
     return isAbsolute(dir) ? dir : resolve(process.cwd(), dir);

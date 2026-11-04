@@ -26,6 +26,7 @@ El sitio y el panel están en [portafolio-front](https://github.com/Ayllescas34/
 ├── test/        pruebas de integración
 ├── scripts/     servidor aislado para las pruebas E2E del frontend
 ├── database/    creación del rol y las bases locales (local/ es privado)
+├── deploy/      infraestructura y scripts del servidor
 ├── docs/        manual y documentación técnica
 └── uploads/     archivos subidos desde el panel (fuera de Git)
 ```
@@ -37,6 +38,7 @@ El sitio y el panel están en [portafolio-front](https://github.com/Ayllescas34/
 - [Modelo de datos](docs/modelo-de-datos.md)
 - [API](docs/api.md)
 - [Decisiones técnicas](docs/decisiones-tecnicas.md)
+- [Despliegue en AWS](docs/despliegue.md)
 - [Mejoras futuras](docs/mejoras-futuras.md)
 
 ## Instalación
@@ -61,7 +63,7 @@ npm install
    | `JWT_SECRET` | 32 o más caracteres aleatorios |
    | `JWT_EXPIRES_IN` | Duración de la sesión, por ejemplo `2h` |
    | `CORS_ORIGINS` | Orígenes permitidos, por ejemplo `http://localhost:4200` |
-   | `COOKIE_SECURE`, `SWAGGER_ENABLED`, `RATE_LIMIT_ENABLED`, `UPLOADS_DIR` | Ver `.env.example` |
+   | `COOKIE_SECURE`, `SWAGGER_ENABLED`, `RATE_LIMIT_ENABLED`, `TRUST_PROXY_HOPS`, `UPLOADS_DIR` | Ver `.env.example` |
 
    La API valida estas variables al arrancar y no inicia si alguna es inválida.
 3. **Migraciones y datos iniciales:**

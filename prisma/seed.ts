@@ -612,7 +612,7 @@ async function seedProjects(tx: Prisma.TransactionClient, tech: Map<string, stri
       status: ProjectStatus.IN_PROGRESS,
       startDate: null,
       isFeatured: false,
-      publishOnCreate: false,
+      publishOnCreate: true,
       technologies: ['react-native', 'typescript', 'sqlite', 'drizzle-orm'],
     },
     {
