@@ -15,6 +15,6 @@ trap 'rm -rf "$work"' EXIT
 pg_dump --format=custom --no-owner --dbname="${DATABASE_URL%%\?*}" --file="$work/portafolio.dump"
 tar -czf "$work/uploads.tar.gz" -C "$UPLOADS_DIR" .
 
-/snap/bin/aws s3 cp --only-show-errors "$work/portafolio.dump" "s3://$BACKUP_BUCKET/db/$stamp.dump"
-/snap/bin/aws s3 cp --only-show-errors "$work/uploads.tar.gz" "s3://$BACKUP_BUCKET/uploads/$stamp.tar.gz"
+/snap/aws-cli/current/bin/aws s3 cp --only-show-errors "$work/portafolio.dump" "s3://$BACKUP_BUCKET/db/$stamp.dump"
+/snap/aws-cli/current/bin/aws s3 cp --only-show-errors "$work/uploads.tar.gz" "s3://$BACKUP_BUCKET/uploads/$stamp.tar.gz"
 echo "Copia completada: $stamp"
